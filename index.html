@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Etisalat Inclusion - Stage 1 Fix</title>
+
+<!-- Modern 2026 Google Vision Engine CDN Links -->
+<script src="https://jsdelivr.net" crossorigin="anonymous"></script>
+
+<style>
+body {
+font-family: system-ui, -apple-system, sans-serif;
+background: #0a0a0a;
+color: #ffffff;
+margin: 0;
+padding: 15px;
+display: flex;
+flex-direction: column;
+align-items: center;
+min-height: 100vh;
+box-sizing: border-box;
+}
+.container {
+width: 100%;
+max-width: 400px;
+display: flex;
+flex-direction: column;
+gap: 15px;
+}
+.video-wrapper {
+position: relative;
+width: 100%;
+aspect-ratio: 3 / 4;
+background: #111;
+border-radius: 16px;
+overflow: hidden;
+border: 2px solid #222;
+}
+video, canvas {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
+transform: scaleX(-1); /* Naturally mirrors tracking for face-to-face signing */
+}
+.action-btn {
+width: 100%;
+background: #00FFCC;
+color: #000;
+border: none;
+padding: 15px;
+border-radius: 12px;
+font-size: 1rem;
+font-weight: bold;
+cursor: pointer;
+box-shadow: 0 4px 15px rgba(0, 255, 204, 0.2);
+}
+.action-btn:disabled {
+background: #222;
+color: #555;
+box-shadow: none;
+}
+.status-box {
+background: #141414;
+padding: 15px;
+border-radius: 10px;
+font-size: 0.9rem;
+border-left: 4px solid #333;
+text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h2 style="text-align: center; margin: 0 0 5px 0; font-weight: 500;">Inclusion Bridge Mobile</h2>
+<p style="text-align: center; color: #777; margin: 0 0 10px 0; font-size: 0.9rem;">Modern API Stabilization Test</p>
+
+<div class="video-wrapper">
+<video id="webcam" autoplay playsinline muted></video>
+<canvas id="output_canvas"></canvas>
+</div>
+
+<button id="activate-btn" class="action-btn">Start Tracking Engine</button>
+<div id="status-box" class="status-box">System Offline - Waiting for user activation</div>
+</div>
+
+<script type="module">
+// Import the updated, supported Google Task classes
+import { HandLandmarker, FilesetResolver } from "https://jsdelivr.net";
+
+const video = document.getElementById("webcam");
+const canvas = document.getElementById("output_canvas");
+const ctx = canvas.getContext("2d");
+const activateBtn = document.getElementById("activate-btn");
+const statusBox = document.getElementById("status-box");
+
+let handLandmarker = undefined;
+let lastVideoTime = -1;
+
+// Initialize the tracking engine dependencies safely
+async function bootstrapEngine() {
+statusBox.innerText = "Downloading Google AI Models...";
+statusBox.style.borderLeftColor = "#ffcc00";
+
+try {
+// Fetch the core WebAssembly (WASM) components from the stable repository
+const vision = await FilesetResolver.forVisionTasks(
+"https://jsdelivr.net/wasm"
+);
+
+// Build out the direct on-device hand tracking instance
+handLandmarker = await HandLandmarker.createFromOptions(vision, {
+baseOptions: {
+modelAssetPath: "https://googleapis.com",
+delegate: "GPU"
+},
+runningMode: "VIDEO", // Optimized for live camera stream frames
+numHands: 1
+});
+
+statusBox.innerText = "Models Loaded! Accessing Camera...";
+startHardwareCamera();
+
+} catch (err) {
+statusBox.innerText = "Error loading framework assets.";
+statusBox.style.borderLeftColor = "#ff3333";
+console.error(err);
+}
+}
+
+// Direct hardware hook for mobile cameras
+async function startHardwareCamera() {
+const constraints = {
+video: {
+facingMode: "user", // Forces phone front selfie camera
+width: { ideal: 640 },
+height: { ideal: 480 }
+}
+};
+
+try {
+const stream = await navigator.mediaDevices.getUserMedia(constraints);
+video.srcObject = stream;
+
+video.addEventListener("loadeddata", () => {
+statusBox.innerText = "SYSTEM ACTIVE - Tracking Hand";
+statusBox.style.borderLeftColor = "#00FFCC";
+activateBtn.innerText = "Engine Running";
+
+// Match visual canvas rendering container sizes perfectly
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+
+// Launch frame looping
+requestAnimationFrame(processVideoFrame);
+});
+} catch (cameraErr) {
+statusBox.innerText = "Camera Access Blocked. Check settings.";
+statusBox.style.borderLeftColor = "#ff3333";
+console.error(cameraErr);
+}
+}
+
+// Frame rendering processing loop
+async function processVideoFrame() {
+if (video.currentTime !== lastVideoTime) {
+lastVideoTime = video.currentTime;
+
+// Clear and mirror background frame drawing
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+if (handLandmarker) {
+const startTimeMs = performance.now();
+const results = handLandmarker.detectForVideo(video, startTimeMs);
+
+if (results.landmarks && results.landmarks.length > 0) {
+statusBox.innerText = "Hand Detected! Joint tracking live.";
+
+for (const landmarks of results.landmarks) {
+// Draw individual skeletal connectors manually to prevent drawing utility dependency drops
+landmarks.forEach((point) => {
+const x = point.x * canvas.width;
+const y = point.y * canvas.height;
+
+ctx.beginPath();
+ctx.arc(x, y, 5, 0, 2 * Math.PI);
+ctx.fillStyle = "#00FFCC";
+ctx.fill();
+});
+}
+} else {
+statusBox.innerText = "Show your hand to the mobile camera";
+}
+}
+}
+requestAnimationFrame(processVideoFrame);
+}
+
+// Direct tap event listener required by mobile security architectures
+activateBtn.addEventListener("click", () => {
+activateBtn.disabled = true;
+bootstrapEngine();
+});
+</script>
+</body>
+</html>
