@@ -3,64 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Inclusion Bridge - Sign & Speech</title>
+<title>Inclusion Bridge - Live Two-Way</title>
 
 <style>
 * { box-sizing: border-box; }
+html, body { height: 100%; }
 body {
   font-family: system-ui, -apple-system, sans-serif;
   background: #0a0a0a;
   color: #ffffff;
   margin: 0;
-  padding: 15px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 100vh;
 }
-.container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
-h2 { text-align: center; margin: 0; font-weight: 600; }
-.sub { text-align: center; color: #888; margin: 0 0 4px 0; font-size: 0.85rem; }
+.app { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; transition: transform 0.4s ease; }
+.app.flipped { transform: rotate(180deg); }
 
-.mode-switch { display: flex; background: #141414; border-radius: 12px; padding: 4px; }
-.mode-switch button {
-  flex: 1; padding: 10px; border: none; border-radius: 9px; background: transparent;
-  color: #888; font-weight: 600; cursor: pointer;
+.topbar { display: flex; justify-content: space-between; align-items: center; }
+h2 { margin: 0; font-weight: 600; font-size: 1.1rem; }
+.flip-btn {
+  background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px;
+  padding: 8px 12px; font-size: 0.8rem; cursor: pointer;
 }
-.mode-switch button.active { background: #00FFCC; color: #000; }
 
+.sign-panel {
+  background: #111; border: 2px solid #222; border-radius: 16px; padding: 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 260px; justify-content: center;
+}
+.sign-panel .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+.hand-emoji { font-size: 6.5rem; line-height: 1; transition: transform 0.12s ease; }
+.caption-word { font-size: 1.9rem; font-weight: 800; color: #00FFCC; text-align: center; min-height: 2.2rem; }
+.live-caption { font-size: 0.95rem; color: #aaa; text-align: center; min-height: 1.3rem; padding: 0 6px; }
+
+.mic-row { display: flex; gap: 8px; }
+.mic-row .action-btn { flex: 1; }
+
+.cam-section { display: flex; flex-direction: column; gap: 10px; }
 .video-wrapper {
-  position: relative; width: 100%; aspect-ratio: 3 / 4;
-  background: #111; border-radius: 16px; overflow: hidden; border: 2px solid #222;
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  background: #111; border-radius: 14px; overflow: hidden; border: 2px solid #222;
 }
-video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-video { transform: scaleX(-1); }
-canvas { transform: scaleX(-1); }
-
-.sign-stage {
-  display: none; width: 100%; aspect-ratio: 3/4; background: #111; border-radius: 16px;
-  border: 2px solid #222; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
-}
-.sign-stage .hand-emoji { font-size: 6rem; transition: transform 0.15s ease; }
-.sign-stage .caption-word { font-size: 1.6rem; font-weight: 700; color: #00FFCC; min-height: 2rem; text-align: center; padding: 0 10px; }
+video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
 .action-btn {
-  width: 100%; background: #00FFCC; color: #000; border: none; padding: 15px;
-  border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer;
+  background: #00FFCC; color: #000; border: none; padding: 13px;
+  border-radius: 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
 }
 .action-btn:disabled { background: #222; color: #555; }
-.action-btn.listening { background: #ff5566; color: #fff; }
+.action-btn.on { background: #ff5566; color: #fff; }
 
 .status-box {
-  background: #141414; padding: 14px; border-radius: 10px; font-size: 0.9rem;
-  border-left: 4px solid #333; text-align: center; min-height: 20px;
+  background: #141414; padding: 10px; border-radius: 10px; font-size: 0.82rem;
+  border-left: 4px solid #333; text-align: center;
 }
-.caption-box {
-  background: #141414; padding: 14px; border-radius: 10px; font-size: 1rem;
-  border-left: 4px solid #00FFCC; min-height: 24px; text-align: center;
-}
+
 .note {
-  background: #141414; padding: 12px 14px; border-radius: 10px; font-size: 0.78rem;
+  background: #141414; padding: 12px 14px; border-radius: 10px; font-size: 0.75rem;
   color: #999; line-height: 1.4;
 }
 .note b { color: #ccc; }
@@ -68,72 +68,55 @@ canvas { transform: scaleX(-1); }
 </head>
 <body>
 
-<div class="container">
-  <h2>Inclusion Bridge</h2>
-  <p class="sub">Sign-to-speech and speech-to-sign, in one browser tab</p>
-
-  <div class="mode-switch">
-    <button id="mode-sign-btn" class="active">They sign → App speaks</button>
-    <button id="mode-speak-btn">They speak → App signs</button>
+<div class="app" id="app">
+  <div class="topbar">
+    <h2>Inclusion Bridge — Live</h2>
+    <button id="flip-btn" class="flip-btn">Flip screen ↕</button>
   </div>
 
-  <!-- SIGN -> SPEECH MODE -->
-  <div id="sign-mode">
+  <div class="sign-panel">
+    <div class="label">What's being said, shown as sign</div>
+    <div class="hand-emoji" id="hand-emoji">🖐️</div>
+    <div class="caption-word" id="caption-word">Ready</div>
+    <div class="live-caption" id="live-caption">Turn on the mic to start</div>
+  </div>
+  <div class="mic-row">
+    <button id="listen-btn" class="action-btn">Start Microphone</button>
+  </div>
+  <div id="listen-status" class="status-box">Microphone off</div>
+
+  <div class="cam-section">
     <div class="video-wrapper">
       <video id="webcam" autoplay playsinline muted></video>
       <canvas id="output_canvas"></canvas>
     </div>
-    <button id="activate-btn" class="action-btn">Start Tracking Engine</button>
-    <div id="status-box" class="status-box">System offline - waiting for activation</div>
-  </div>
-
-  <!-- SPEECH -> SIGN MODE -->
-  <div id="speak-mode" style="display:none;">
-    <div class="sign-stage" id="sign-stage" style="display:flex;">
-      <div class="hand-emoji" id="hand-emoji">🖐️</div>
-      <div class="caption-word" id="caption-word">Waiting for speech…</div>
-    </div>
-    <button id="listen-btn" class="action-btn">Start Listening</button>
-    <div id="listen-status" class="status-box">Microphone off</div>
-    <div id="caption-box" class="caption-box">Recognized speech will appear here</div>
+    <button id="activate-btn" class="action-btn">Start Camera Tracking</button>
+    <div id="status-box" class="status-box">Camera off</div>
   </div>
 
   <div class="note">
-    <b>Honest note on scope:</b> the "sign → speech" side here recognizes a small fixed set of
-    hand shapes (open palm, fist, thumbs up, peace, pointing, OK, "I love you") using hand-landmark
-    geometry, not full ASL/BSL grammar - real sign languages use motion, facial expression and
-    sentence structure that a single static-pose classifier can't capture. The "speech → sign" side
-    matches spoken keywords to those same hand shapes and plays them back as an icon + caption, not a
-    realistic signing avatar. This is a working starting prototype, not a certified communication aid -
-    treat it as a base to extend (e.g. train a proper gesture-sequence model, or license a real sign
-    avatar library) rather than a finished accessibility product.
+    <b>How to set it up:</b> stand the phone/tablet between the two of you, screen facing the
+    deaf or mute person (tap "Flip screen" once it's turned around so it reads right-side-up for
+    them). The front camera faces the same way as the screen, so it watches their hands while the
+    sign panel shows them what you're saying. The speaker plays audio for you on the other side.
+    <br><br>
+    <b>Real limits, plainly:</b> the sign-recognition side matches ~7 static hand shapes held
+    briefly - it can't follow fluent signing at full speed, because that needs a model trained on
+    motion over time, not single frozen poses. The speech side matches spoken words against a fixed
+    list (~35 words) - anything outside that list shows as plain text, not a sign. Treat this as a
+    working starting point to build on, not a finished interpreter.
   </div>
 </div>
 
 <script type="module">
 import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
-/* ---------- Mode switching ---------- */
-const modeSignBtn = document.getElementById("mode-sign-btn");
-const modeSpeakBtn = document.getElementById("mode-speak-btn");
-const signMode = document.getElementById("sign-mode");
-const speakMode = document.getElementById("speak-mode");
-
-modeSignBtn.addEventListener("click", () => {
-  modeSignBtn.classList.add("active");
-  modeSpeakBtn.classList.remove("active");
-  signMode.style.display = "block";
-  speakMode.style.display = "none";
-  stopListening();
-});
-modeSpeakBtn.addEventListener("click", () => {
-  modeSpeakBtn.classList.add("active");
-  modeSignBtn.classList.remove("active");
-  speakMode.style.display = "block";
-  signMode.style.display = "none";
+const appEl = document.getElementById("app");
+document.getElementById("flip-btn").addEventListener("click", () => {
+  appEl.classList.toggle("flipped");
 });
 
-/* ================= SIGN -> SPEECH ================= */
+/* ================= SIGN -> SPEECH (camera side) ================= */
 const video = document.getElementById("webcam");
 const canvas = document.getElementById("output_canvas");
 const ctx = canvas.getContext("2d");
@@ -144,7 +127,9 @@ let handLandmarker;
 let lastVideoTime = -1;
 let lastSpokenGesture = null;
 let gestureHoldStart = 0;
-const HOLD_MS = 650; // how long a gesture must be held before it's spoken
+let cooldownUntil = 0;
+const HOLD_MS = 350;
+const COOLDOWN_MS = 500;
 
 const GESTURE_PHRASES = {
   "open-palm": "Hello",
@@ -160,7 +145,7 @@ function speak(text) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 0.95;
+  utter.rate = 1.05;
   window.speechSynthesis.speak(utter);
 }
 
@@ -190,16 +175,14 @@ async function bootstrapEngine() {
 }
 
 async function startHardwareCamera() {
-  const constraints = {
-    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
-  };
+  const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } };
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     video.srcObject = stream;
     video.addEventListener("loadeddata", () => {
-      statusBox.innerText = "System active - show a hand sign";
+      statusBox.innerText = "Camera active - show a hand sign";
       statusBox.style.borderLeftColor = "#00FFCC";
-      activateBtn.innerText = "Engine Running";
+      activateBtn.innerText = "Camera Running";
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       requestAnimationFrame(processVideoFrame);
@@ -211,11 +194,8 @@ async function startHardwareCamera() {
   }
 }
 
-function dist(a, b) {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
+function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
-// Rule-based classifier over the 21 MediaPipe hand landmarks.
 function classifyGesture(lm) {
   const extended = (tip, pip) => lm[tip].y < lm[pip].y - 0.02;
   const indexExt = extended(8, 6);
@@ -245,7 +225,6 @@ async function processVideoFrame() {
 
       if (results.landmarks && results.landmarks.length > 0) {
         const lm = results.landmarks[0];
-
         for (const point of lm) {
           const x = point.x * canvas.width;
           const y = point.y * canvas.height;
@@ -258,8 +237,10 @@ async function processVideoFrame() {
         const gesture = classifyGesture(lm);
         const now = performance.now();
 
-        if (gesture && gesture === lastSpokenGesture) {
-          // same gesture already spoken - keep hold timer where it is
+        if (now < cooldownUntil) {
+          // just fired - brief pause before re-triggering
+        } else if (gesture && gesture === lastSpokenGesture) {
+          // still holding the same shape, don't re-speak until it changes
         } else if (gesture) {
           if (gestureHoldStart === 0) gestureHoldStart = now;
           if (now - gestureHoldStart >= HOLD_MS) {
@@ -267,8 +248,7 @@ async function processVideoFrame() {
             speak(GESTURE_PHRASES[gesture]);
             lastSpokenGesture = gesture;
             gestureHoldStart = 0;
-          } else {
-            statusBox.innerText = "Hold the sign steady...";
+            cooldownUntil = now + COOLDOWN_MS;
           }
         } else {
           gestureHoldStart = 0;
@@ -290,92 +270,104 @@ activateBtn.addEventListener("click", () => {
   bootstrapEngine();
 });
 
-/* ================= SPEECH -> SIGN ================= */
+/* ================= SPEECH -> SIGN (live) ================= */
 const listenBtn = document.getElementById("listen-btn");
 const listenStatus = document.getElementById("listen-status");
-const captionBox = document.getElementById("caption-box");
+const liveCaption = document.getElementById("live-caption");
 const handEmoji = document.getElementById("hand-emoji");
 const captionWord = document.getElementById("caption-word");
 
 const KEYWORD_TO_SIGN = {
-  "hello": { emoji: "🖐️", word: "HELLO" },
-  "hi": { emoji: "🖐️", word: "HELLO" },
-  "yes": { emoji: "👍", word: "YES" },
-  "good": { emoji: "👍", word: "GOOD" },
-  "stop": { emoji: "✊", word: "STOP" },
-  "wait": { emoji: "✊", word: "WAIT" },
-  "peace": { emoji: "✌️", word: "PEACE" },
-  "you": { emoji: "☝️", word: "YOU" },
-  "okay": { emoji: "👌", word: "OKAY" },
-  "ok": { emoji: "👌", word: "OKAY" },
-  "love": { emoji: "🤟", word: "LOVE YOU" },
-  "thank": { emoji: "🙏", word: "THANK YOU" },
-  "help": { emoji: "🆘", word: "HELP" }
+  "hello": "👋 HELLO", "hi": "👋 HELLO", "hey": "👋 HELLO",
+  "yes": "👍 YES", "good": "👍 GOOD", "great": "👍 GREAT",
+  "no": "🤚 NO", "stop": "✊ STOP",
+  "peace": "✌️ PEACE", "you": "☝️ YOU", "me": "🫵 ME", "i": "🫵 I",
+  "okay": "👌 OKAY", "ok": "👌 OKAY", "fine": "👌 FINE",
+  "love": "🤟 LOVE", "thank": "🙏 THANK YOU", "thanks": "🙏 THANK YOU",
+  "please": "🙏 PLEASE", "sorry": "🥺 SORRY", "help": "🆘 HELP",
+  "done": "✅ DONE", "finished": "✅ FINISHED", "wait": "⏳ WAIT",
+  "eat": "🍽️ EAT", "drink": "🥤 DRINK", "water": "💧 WATER",
+  "home": "🏠 HOME", "work": "💼 WORK", "family": "👪 FAMILY",
+  "friend": "🤝 FRIEND", "happy": "😊 HAPPY", "sad": "😢 SAD",
+  "understand": "🧠 UNDERSTAND", "name": "📛 NAME", "time": "⏰ TIME",
+  "today": "📅 TODAY", "tomorrow": "🌅 TOMORROW", "want": "🙋 WANT",
+  "need": "🙋 NEED", "where": "❓ WHERE", "what": "❓ WHAT",
+  "why": "❓ WHY", "who": "❓ WHO", "more": "➕ MORE", "again": "🔁 AGAIN"
 };
 
 let recognition = null;
 let listening = false;
+let lastShownWord = "";
 
-function playSignForText(text) {
-  const words = text.toLowerCase().split(/\s+/);
-  let matched = false;
-  for (const w of words) {
-    for (const key in KEYWORD_TO_SIGN) {
-      if (w.includes(key)) {
-        const { emoji, word } = KEYWORD_TO_SIGN[key];
-        handEmoji.style.transform = "scale(0.7)";
-        setTimeout(() => { handEmoji.style.transform = "scale(1)"; }, 150);
-        handEmoji.innerText = emoji;
-        captionWord.innerText = word;
-        matched = true;
-      }
-    }
-  }
-  if (!matched) {
-    captionWord.innerText = text.toUpperCase();
+function showSignForWord(word) {
+  const clean = word.toLowerCase().replace(/[^a-z]/g, "");
+  const match = KEYWORD_TO_SIGN[clean];
+  handEmoji.style.transform = "scale(0.75)";
+  setTimeout(() => { handEmoji.style.transform = "scale(1)"; }, 100);
+
+  if (match) {
+    const [emoji, ...wordParts] = match.split(" ");
+    handEmoji.innerText = emoji;
+    captionWord.innerText = wordParts.join(" ");
+  } else {
     handEmoji.innerText = "🤔";
+    captionWord.innerText = word.toUpperCase();
+  }
+}
+
+function handleLiveText(text) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return;
+  const latest = words[words.length - 1];
+  if (latest !== lastShownWord) {
+    lastShownWord = latest;
+    showSignForWord(latest);
   }
 }
 
 function startListening() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    listenStatus.innerText = "Speech recognition isn't supported in this browser.";
+    listenStatus.innerText = "Speech recognition isn't supported in this browser. Try Chrome.";
     listenStatus.style.borderLeftColor = "#ff3333";
     return;
   }
   recognition = new SpeechRecognition();
   recognition.continuous = true;
-  recognition.interimResults = false;
+  recognition.interimResults = true;
   recognition.lang = "en-US";
 
   recognition.onresult = (event) => {
-    const last = event.results[event.results.length - 1];
-    const text = last[0].transcript.trim();
-    captionBox.innerText = text;
-    playSignForText(text);
+    let interim = "";
+    let final = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += t;
+      else interim += t;
+    }
+    const liveText = (final + " " + interim).trim();
+    liveCaption.innerText = liveText || "…";
+    handleLiveText(liveText);
   };
   recognition.onerror = (e) => {
     listenStatus.innerText = "Recognition error: " + e.error;
     listenStatus.style.borderLeftColor = "#ff3333";
   };
-  recognition.onend = () => {
-    if (listening) recognition.start(); // keep it alive while toggled on
-  };
+  recognition.onend = () => { if (listening) recognition.start(); };
 
   recognition.start();
   listening = true;
-  listenBtn.innerText = "Stop Listening";
-  listenBtn.classList.add("listening");
-  listenStatus.innerText = "Listening for speech...";
+  listenBtn.innerText = "Stop Microphone";
+  listenBtn.classList.add("on");
+  listenStatus.innerText = "Listening live...";
   listenStatus.style.borderLeftColor = "#00FFCC";
 }
 
 function stopListening() {
   listening = false;
   if (recognition) recognition.stop();
-  listenBtn.innerText = "Start Listening";
-  listenBtn.classList.remove("listening");
+  listenBtn.innerText = "Start Microphone";
+  listenBtn.classList.remove("on");
   listenStatus.innerText = "Microphone off";
   listenStatus.style.borderLeftColor = "#333";
 }
