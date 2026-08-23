@@ -3,207 +3,386 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Etisalat Inclusion - Stage 1 Fix</title>
-
-<!-- Modern 2026 Google Vision Engine CDN Links -->
-<script src="https://jsdelivr.net" crossorigin="anonymous"></script>
+<title>Inclusion Bridge - Sign & Speech</title>
 
 <style>
+* { box-sizing: border-box; }
 body {
-font-family: system-ui, -apple-system, sans-serif;
-background: #0a0a0a;
-color: #ffffff;
-margin: 0;
-padding: 15px;
-display: flex;
-flex-direction: column;
-align-items: center;
-min-height: 100vh;
-box-sizing: border-box;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
+  margin: 0;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
 }
-.container {
-width: 100%;
-max-width: 400px;
-display: flex;
-flex-direction: column;
-gap: 15px;
+.container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+h2 { text-align: center; margin: 0; font-weight: 600; }
+.sub { text-align: center; color: #888; margin: 0 0 4px 0; font-size: 0.85rem; }
+
+.mode-switch { display: flex; background: #141414; border-radius: 12px; padding: 4px; }
+.mode-switch button {
+  flex: 1; padding: 10px; border: none; border-radius: 9px; background: transparent;
+  color: #888; font-weight: 600; cursor: pointer;
 }
+.mode-switch button.active { background: #00FFCC; color: #000; }
+
 .video-wrapper {
-position: relative;
-width: 100%;
-aspect-ratio: 3 / 4;
-background: #111;
-border-radius: 16px;
-overflow: hidden;
-border: 2px solid #222;
+  position: relative; width: 100%; aspect-ratio: 3 / 4;
+  background: #111; border-radius: 16px; overflow: hidden; border: 2px solid #222;
 }
-video, canvas {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-object-fit: cover;
-transform: scaleX(-1); /* Naturally mirrors tracking for face-to-face signing */
+video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+video { transform: scaleX(-1); }
+canvas { transform: scaleX(-1); }
+
+.sign-stage {
+  display: none; width: 100%; aspect-ratio: 3/4; background: #111; border-radius: 16px;
+  border: 2px solid #222; align-items: center; justify-content: center; flex-direction: column; gap: 10px;
 }
+.sign-stage .hand-emoji { font-size: 6rem; transition: transform 0.15s ease; }
+.sign-stage .caption-word { font-size: 1.6rem; font-weight: 700; color: #00FFCC; min-height: 2rem; text-align: center; padding: 0 10px; }
+
 .action-btn {
-width: 100%;
-background: #00FFCC;
-color: #000;
-border: none;
-padding: 15px;
-border-radius: 12px;
-font-size: 1rem;
-font-weight: bold;
-cursor: pointer;
-box-shadow: 0 4px 15px rgba(0, 255, 204, 0.2);
+  width: 100%; background: #00FFCC; color: #000; border: none; padding: 15px;
+  border-radius: 12px; font-size: 1rem; font-weight: bold; cursor: pointer;
 }
-.action-btn:disabled {
-background: #222;
-color: #555;
-box-shadow: none;
-}
+.action-btn:disabled { background: #222; color: #555; }
+.action-btn.listening { background: #ff5566; color: #fff; }
+
 .status-box {
-background: #141414;
-padding: 15px;
-border-radius: 10px;
-font-size: 0.9rem;
-border-left: 4px solid #333;
-text-align: center;
+  background: #141414; padding: 14px; border-radius: 10px; font-size: 0.9rem;
+  border-left: 4px solid #333; text-align: center; min-height: 20px;
 }
+.caption-box {
+  background: #141414; padding: 14px; border-radius: 10px; font-size: 1rem;
+  border-left: 4px solid #00FFCC; min-height: 24px; text-align: center;
+}
+.note {
+  background: #141414; padding: 12px 14px; border-radius: 10px; font-size: 0.78rem;
+  color: #999; line-height: 1.4;
+}
+.note b { color: #ccc; }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h2 style="text-align: center; margin: 0 0 5px 0; font-weight: 500;">Inclusion Bridge Mobile</h2>
-<p style="text-align: center; color: #777; margin: 0 0 10px 0; font-size: 0.9rem;">Modern API Stabilization Test</p>
+  <h2>Inclusion Bridge</h2>
+  <p class="sub">Sign-to-speech and speech-to-sign, in one browser tab</p>
 
-<div class="video-wrapper">
-<video id="webcam" autoplay playsinline muted></video>
-<canvas id="output_canvas"></canvas>
-</div>
+  <div class="mode-switch">
+    <button id="mode-sign-btn" class="active">They sign → App speaks</button>
+    <button id="mode-speak-btn">They speak → App signs</button>
+  </div>
 
-<button id="activate-btn" class="action-btn">Start Tracking Engine</button>
-<div id="status-box" class="status-box">System Offline - Waiting for user activation</div>
+  <!-- SIGN -> SPEECH MODE -->
+  <div id="sign-mode">
+    <div class="video-wrapper">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="output_canvas"></canvas>
+    </div>
+    <button id="activate-btn" class="action-btn">Start Tracking Engine</button>
+    <div id="status-box" class="status-box">System offline - waiting for activation</div>
+  </div>
+
+  <!-- SPEECH -> SIGN MODE -->
+  <div id="speak-mode" style="display:none;">
+    <div class="sign-stage" id="sign-stage" style="display:flex;">
+      <div class="hand-emoji" id="hand-emoji">🖐️</div>
+      <div class="caption-word" id="caption-word">Waiting for speech…</div>
+    </div>
+    <button id="listen-btn" class="action-btn">Start Listening</button>
+    <div id="listen-status" class="status-box">Microphone off</div>
+    <div id="caption-box" class="caption-box">Recognized speech will appear here</div>
+  </div>
+
+  <div class="note">
+    <b>Honest note on scope:</b> the "sign → speech" side here recognizes a small fixed set of
+    hand shapes (open palm, fist, thumbs up, peace, pointing, OK, "I love you") using hand-landmark
+    geometry, not full ASL/BSL grammar - real sign languages use motion, facial expression and
+    sentence structure that a single static-pose classifier can't capture. The "speech → sign" side
+    matches spoken keywords to those same hand shapes and plays them back as an icon + caption, not a
+    realistic signing avatar. This is a working starting prototype, not a certified communication aid -
+    treat it as a base to extend (e.g. train a proper gesture-sequence model, or license a real sign
+    avatar library) rather than a finished accessibility product.
+  </div>
 </div>
 
 <script type="module">
-// Import the updated, supported Google Task classes
-import { HandLandmarker, FilesetResolver } from "https://jsdelivr.net";
+import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
+/* ---------- Mode switching ---------- */
+const modeSignBtn = document.getElementById("mode-sign-btn");
+const modeSpeakBtn = document.getElementById("mode-speak-btn");
+const signMode = document.getElementById("sign-mode");
+const speakMode = document.getElementById("speak-mode");
+
+modeSignBtn.addEventListener("click", () => {
+  modeSignBtn.classList.add("active");
+  modeSpeakBtn.classList.remove("active");
+  signMode.style.display = "block";
+  speakMode.style.display = "none";
+  stopListening();
+});
+modeSpeakBtn.addEventListener("click", () => {
+  modeSpeakBtn.classList.add("active");
+  modeSignBtn.classList.remove("active");
+  speakMode.style.display = "block";
+  signMode.style.display = "none";
+});
+
+/* ================= SIGN -> SPEECH ================= */
 const video = document.getElementById("webcam");
 const canvas = document.getElementById("output_canvas");
 const ctx = canvas.getContext("2d");
 const activateBtn = document.getElementById("activate-btn");
 const statusBox = document.getElementById("status-box");
 
-let handLandmarker = undefined;
+let handLandmarker;
 let lastVideoTime = -1;
+let lastSpokenGesture = null;
+let gestureHoldStart = 0;
+const HOLD_MS = 650; // how long a gesture must be held before it's spoken
 
-// Initialize the tracking engine dependencies safely
-async function bootstrapEngine() {
-statusBox.innerText = "Downloading Google AI Models...";
-statusBox.style.borderLeftColor = "#ffcc00";
-
-try {
-// Fetch the core WebAssembly (WASM) components from the stable repository
-const vision = await FilesetResolver.forVisionTasks(
-"https://jsdelivr.net/wasm"
-);
-
-// Build out the direct on-device hand tracking instance
-handLandmarker = await HandLandmarker.createFromOptions(vision, {
-baseOptions: {
-modelAssetPath: "https://googleapis.com",
-delegate: "GPU"
-},
-runningMode: "VIDEO", // Optimized for live camera stream frames
-numHands: 1
-});
-
-statusBox.innerText = "Models Loaded! Accessing Camera...";
-startHardwareCamera();
-
-} catch (err) {
-statusBox.innerText = "Error loading framework assets.";
-statusBox.style.borderLeftColor = "#ff3333";
-console.error(err);
-}
-}
-
-// Direct hardware hook for mobile cameras
-async function startHardwareCamera() {
-const constraints = {
-video: {
-facingMode: "user", // Forces phone front selfie camera
-width: { ideal: 640 },
-height: { ideal: 480 }
-}
+const GESTURE_PHRASES = {
+  "open-palm": "Hello",
+  "fist": "Stop",
+  "thumbs-up": "Yes, that's good",
+  "peace": "Peace",
+  "pointing": "You",
+  "ok": "Okay",
+  "ily": "I love you"
 };
 
-try {
-const stream = await navigator.mediaDevices.getUserMedia(constraints);
-video.srcObject = stream;
-
-video.addEventListener("loadeddata", () => {
-statusBox.innerText = "SYSTEM ACTIVE - Tracking Hand";
-statusBox.style.borderLeftColor = "#00FFCC";
-activateBtn.innerText = "Engine Running";
-
-// Match visual canvas rendering container sizes perfectly
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
-
-// Launch frame looping
-requestAnimationFrame(processVideoFrame);
-});
-} catch (cameraErr) {
-statusBox.innerText = "Camera Access Blocked. Check settings.";
-statusBox.style.borderLeftColor = "#ff3333";
-console.error(cameraErr);
-}
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.95;
+  window.speechSynthesis.speak(utter);
 }
 
-// Frame rendering processing loop
+async function bootstrapEngine() {
+  statusBox.innerText = "Downloading hand-tracking model...";
+  statusBox.style.borderLeftColor = "#ffcc00";
+  try {
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    handLandmarker = await HandLandmarker.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate: "GPU"
+      },
+      runningMode: "VIDEO",
+      numHands: 1
+    });
+    statusBox.innerText = "Model loaded. Accessing camera...";
+    startHardwareCamera();
+  } catch (err) {
+    statusBox.innerText = "Error loading tracking model. Check your connection.";
+    statusBox.style.borderLeftColor = "#ff3333";
+    console.error(err);
+  }
+}
+
+async function startHardwareCamera() {
+  const constraints = {
+    video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }
+  };
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    video.addEventListener("loadeddata", () => {
+      statusBox.innerText = "System active - show a hand sign";
+      statusBox.style.borderLeftColor = "#00FFCC";
+      activateBtn.innerText = "Engine Running";
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      requestAnimationFrame(processVideoFrame);
+    });
+  } catch (cameraErr) {
+    statusBox.innerText = "Camera access blocked. Check browser permissions.";
+    statusBox.style.borderLeftColor = "#ff3333";
+    console.error(cameraErr);
+  }
+}
+
+function dist(a, b) {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+// Rule-based classifier over the 21 MediaPipe hand landmarks.
+function classifyGesture(lm) {
+  const extended = (tip, pip) => lm[tip].y < lm[pip].y - 0.02;
+  const indexExt = extended(8, 6);
+  const middleExt = extended(12, 10);
+  const ringExt = extended(16, 14);
+  const pinkyExt = extended(20, 18);
+  const thumbExt = dist(lm[4], lm[17]) > dist(lm[3], lm[17]) + 0.02;
+  const thumbIndexClose = dist(lm[4], lm[8]) < 0.05;
+
+  if (thumbIndexClose && middleExt && ringExt && pinkyExt) return "ok";
+  if (thumbExt && !indexExt && !middleExt && !ringExt && !pinkyExt) return "thumbs-up";
+  if (indexExt && middleExt && !ringExt && !pinkyExt && !thumbExt) return "peace";
+  if (indexExt && !middleExt && !ringExt && !pinkyExt) return "pointing";
+  if (thumbExt && indexExt && !middleExt && !ringExt && pinkyExt) return "ily";
+  if (thumbExt && indexExt && middleExt && ringExt && pinkyExt) return "open-palm";
+  if (!thumbExt && !indexExt && !middleExt && !ringExt && !pinkyExt) return "fist";
+  return null;
+}
+
 async function processVideoFrame() {
-if (video.currentTime !== lastVideoTime) {
-lastVideoTime = video.currentTime;
+  if (video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Clear and mirror background frame drawing
-ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (handLandmarker) {
+      const results = handLandmarker.detectForVideo(video, performance.now());
 
-if (handLandmarker) {
-const startTimeMs = performance.now();
-const results = handLandmarker.detectForVideo(video, startTimeMs);
+      if (results.landmarks && results.landmarks.length > 0) {
+        const lm = results.landmarks[0];
 
-if (results.landmarks && results.landmarks.length > 0) {
-statusBox.innerText = "Hand Detected! Joint tracking live.";
+        for (const point of lm) {
+          const x = point.x * canvas.width;
+          const y = point.y * canvas.height;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, 2 * Math.PI);
+          ctx.fillStyle = "#00FFCC";
+          ctx.fill();
+        }
 
-for (const landmarks of results.landmarks) {
-// Draw individual skeletal connectors manually to prevent drawing utility dependency drops
-landmarks.forEach((point) => {
-const x = point.x * canvas.width;
-const y = point.y * canvas.height;
+        const gesture = classifyGesture(lm);
+        const now = performance.now();
 
-ctx.beginPath();
-ctx.arc(x, y, 5, 0, 2 * Math.PI);
-ctx.fillStyle = "#00FFCC";
-ctx.fill();
-});
+        if (gesture && gesture === lastSpokenGesture) {
+          // same gesture already spoken - keep hold timer where it is
+        } else if (gesture) {
+          if (gestureHoldStart === 0) gestureHoldStart = now;
+          if (now - gestureHoldStart >= HOLD_MS) {
+            statusBox.innerText = `Recognized: ${GESTURE_PHRASES[gesture]}`;
+            speak(GESTURE_PHRASES[gesture]);
+            lastSpokenGesture = gesture;
+            gestureHoldStart = 0;
+          } else {
+            statusBox.innerText = "Hold the sign steady...";
+          }
+        } else {
+          gestureHoldStart = 0;
+          lastSpokenGesture = null;
+          statusBox.innerText = "Hand detected - no matching sign yet";
+        }
+      } else {
+        gestureHoldStart = 0;
+        lastSpokenGesture = null;
+        statusBox.innerText = "Show your hand to the camera";
+      }
+    }
+  }
+  requestAnimationFrame(processVideoFrame);
 }
-} else {
-statusBox.innerText = "Show your hand to the mobile camera";
-}
-}
-}
-requestAnimationFrame(processVideoFrame);
-}
 
-// Direct tap event listener required by mobile security architectures
 activateBtn.addEventListener("click", () => {
-activateBtn.disabled = true;
-bootstrapEngine();
+  activateBtn.disabled = true;
+  bootstrapEngine();
+});
+
+/* ================= SPEECH -> SIGN ================= */
+const listenBtn = document.getElementById("listen-btn");
+const listenStatus = document.getElementById("listen-status");
+const captionBox = document.getElementById("caption-box");
+const handEmoji = document.getElementById("hand-emoji");
+const captionWord = document.getElementById("caption-word");
+
+const KEYWORD_TO_SIGN = {
+  "hello": { emoji: "🖐️", word: "HELLO" },
+  "hi": { emoji: "🖐️", word: "HELLO" },
+  "yes": { emoji: "👍", word: "YES" },
+  "good": { emoji: "👍", word: "GOOD" },
+  "stop": { emoji: "✊", word: "STOP" },
+  "wait": { emoji: "✊", word: "WAIT" },
+  "peace": { emoji: "✌️", word: "PEACE" },
+  "you": { emoji: "☝️", word: "YOU" },
+  "okay": { emoji: "👌", word: "OKAY" },
+  "ok": { emoji: "👌", word: "OKAY" },
+  "love": { emoji: "🤟", word: "LOVE YOU" },
+  "thank": { emoji: "🙏", word: "THANK YOU" },
+  "help": { emoji: "🆘", word: "HELP" }
+};
+
+let recognition = null;
+let listening = false;
+
+function playSignForText(text) {
+  const words = text.toLowerCase().split(/\s+/);
+  let matched = false;
+  for (const w of words) {
+    for (const key in KEYWORD_TO_SIGN) {
+      if (w.includes(key)) {
+        const { emoji, word } = KEYWORD_TO_SIGN[key];
+        handEmoji.style.transform = "scale(0.7)";
+        setTimeout(() => { handEmoji.style.transform = "scale(1)"; }, 150);
+        handEmoji.innerText = emoji;
+        captionWord.innerText = word;
+        matched = true;
+      }
+    }
+  }
+  if (!matched) {
+    captionWord.innerText = text.toUpperCase();
+    handEmoji.innerText = "🤔";
+  }
+}
+
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    listenStatus.innerText = "Speech recognition isn't supported in this browser.";
+    listenStatus.style.borderLeftColor = "#ff3333";
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+
+  recognition.onresult = (event) => {
+    const last = event.results[event.results.length - 1];
+    const text = last[0].transcript.trim();
+    captionBox.innerText = text;
+    playSignForText(text);
+  };
+  recognition.onerror = (e) => {
+    listenStatus.innerText = "Recognition error: " + e.error;
+    listenStatus.style.borderLeftColor = "#ff3333";
+  };
+  recognition.onend = () => {
+    if (listening) recognition.start(); // keep it alive while toggled on
+  };
+
+  recognition.start();
+  listening = true;
+  listenBtn.innerText = "Stop Listening";
+  listenBtn.classList.add("listening");
+  listenStatus.innerText = "Listening for speech...";
+  listenStatus.style.borderLeftColor = "#00FFCC";
+}
+
+function stopListening() {
+  listening = false;
+  if (recognition) recognition.stop();
+  listenBtn.innerText = "Start Listening";
+  listenBtn.classList.remove("listening");
+  listenStatus.innerText = "Microphone off";
+  listenStatus.style.borderLeftColor = "#333";
+}
+
+listenBtn.addEventListener("click", () => {
+  if (listening) stopListening();
+  else startListening();
 });
 </script>
 </body>
