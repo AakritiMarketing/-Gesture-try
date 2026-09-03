@@ -1,381 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Inclusion Bridge - Live Two-Way</title>
-
-<style>
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #0a0a0a;
-  color: #ffffff;
-  margin: 0;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.app { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; transition: transform 0.4s ease; }
-.app.flipped { transform: rotate(180deg); }
-
-.topbar { display: flex; justify-content: space-between; align-items: center; }
-h2 { margin: 0; font-weight: 600; font-size: 1.1rem; }
-.flip-btn {
-  background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px;
-  padding: 8px 12px; font-size: 0.8rem; cursor: pointer;
-}
-
-.sign-panel {
-  background: #111; border: 2px solid #222; border-radius: 16px; padding: 18px;
-  display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 260px; justify-content: center;
-}
-.sign-panel .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
-.hand-emoji { font-size: 6.5rem; line-height: 1; transition: transform 0.12s ease; }
-.caption-word { font-size: 1.9rem; font-weight: 800; color: #00FFCC; text-align: center; min-height: 2.2rem; }
-.live-caption { font-size: 0.95rem; color: #aaa; text-align: center; min-height: 1.3rem; padding: 0 6px; }
-
-.mic-row { display: flex; gap: 8px; }
-.mic-row .action-btn { flex: 1; }
-
-.cam-section { display: flex; flex-direction: column; gap: 10px; }
-.video-wrapper {
-  position: relative; width: 100%; aspect-ratio: 4/3;
-  background: #111; border-radius: 14px; overflow: hidden; border: 2px solid #222;
-}
-video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-
-.action-btn {
-  background: #00FFCC; color: #000; border: none; padding: 13px;
-  border-radius: 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
-}
-.action-btn:disabled { background: #222; color: #555; }
-.action-btn.on { background: #ff5566; color: #fff; }
-
-.status-box {
-  background: #141414; padding: 10px; border-radius: 10px; font-size: 0.82rem;
-  border-left: 4px solid #333; text-align: center;
-}
-
-.note {
-  background: #141414; padding: 12px 14px; border-radius: 10px; font-size: 0.75rem;
-  color: #999; line-height: 1.4;
-}
-.note b { color: #ccc; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creations | Link Hub</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 3rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 0.5rem 0;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 1px solid #334155;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-color: #475569;
+        }
+        .card:hover::before {
+            opacity: 1;
+        }
+        .card h2 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .qr-wrapper {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .qr-wrapper img {
+            display: block;
+            border-radius: 4px;
+        }
+        a.button {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+            text-decoration: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 1rem;
+        }
+        a.button:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+        .url-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            word-break: break-all;
+            line-height: 1.4;
+            padding: 0 10px;
+        }
+    </style>
 </head>
 <body>
-
-<div class="app" id="app">
-  <div class="topbar">
-    <h2>Inclusion Bridge — Live</h2>
-    <button id="flip-btn" class="flip-btn">Flip screen ↕</button>
-  </div>
-
-  <div class="sign-panel">
-    <div class="label">What's being said, shown as sign</div>
-    <div class="hand-emoji" id="hand-emoji">🖐️</div>
-    <div class="caption-word" id="caption-word">Ready</div>
-    <div class="live-caption" id="live-caption">Turn on the mic to start</div>
-  </div>
-  <div class="mic-row">
-    <button id="listen-btn" class="action-btn">Start Microphone</button>
-  </div>
-  <div id="listen-status" class="status-box">Microphone off</div>
-
-  <div class="cam-section">
-    <div class="video-wrapper">
-      <video id="webcam" autoplay playsinline muted></video>
-      <canvas id="output_canvas"></canvas>
+    <div class="header">
+        <h1>Creations</h1>
+        <p class="subtitle">Your Centralized Hub & QR Code Dashboard</p>
     </div>
-    <button id="activate-btn" class="action-btn">Start Camera Tracking</button>
-    <div id="status-box" class="status-box">Camera off</div>
-  </div>
+    
+    <div class="grid">
+        <!-- Card 1 -->
+        <div class="card">
+            <h2>Prasnt Studio</h2>
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/" alt="QR Code">
+            </div>
+            <a href="https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/" class="button" target="_blank">Open Website</a>
+            <div class="url-text">https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/</div>
+        </div>
 
-  <div class="note">
-    <b>How to set it up:</b> stand the phone/tablet between the two of you, screen facing the
-    deaf or mute person (tap "Flip screen" once it's turned around so it reads right-side-up for
-    them). The front camera faces the same way as the screen, so it watches their hands while the
-    sign panel shows them what you're saying. The speaker plays audio for you on the other side.
-    <br><br>
-    <b>Real limits, plainly:</b> the sign-recognition side matches ~7 static hand shapes held
-    briefly - it can't follow fluent signing at full speed, because that needs a model trained on
-    motion over time, not single frozen poses. The speech side matches spoken words against a fixed
-    list (~35 words) - anything outside that list shows as plain text, not a sign. Treat this as a
-    working starting point to build on, not a finished interpreter.
-  </div>
-</div>
+        <!-- Card 2 -->
+        <div class="card">
+            <h2>U-Design</h2>
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://udesign999-bot.github.io/" alt="QR Code">
+            </div>
+            <a href="https://udesign999-bot.github.io/" class="button" target="_blank">Open Website</a>
+            <div class="url-text">https://udesign999-bot.github.io/</div>
+        </div>
 
-<script type="module">
-import { HandLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+        <!-- Card 3 -->
+        <div class="card">
+            <h2>Prasnt Web Bio</h2>
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://tzprasantofficial-ai.github.io/-Prasant-/" alt="QR Code">
+            </div>
+            <a href="https://tzprasantofficial-ai.github.io/-Prasant-/" class="button" target="_blank">Open Website</a>
+            <div class="url-text">https://tzprasantofficial-ai.github.io/-Prasant-/</div>
+        </div>
 
-const appEl = document.getElementById("app");
-document.getElementById("flip-btn").addEventListener("click", () => {
-  appEl.classList.toggle("flipped");
-});
+        <!-- Card 4 -->
+        <div class="card">
+            <h2>Prasnt Website</h2>
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://prasant-studio.ai.studio/" alt="QR Code">
+            </div>
+            <a href="https://prasant-studio.ai.studio/" class="button" target="_blank">Open Website</a>
+            <div class="url-text">https://prasant-studio.ai.studio/</div>
+        </div>
 
-/* ================= SIGN -> SPEECH (camera side) ================= */
-const video = document.getElementById("webcam");
-const canvas = document.getElementById("output_canvas");
-const ctx = canvas.getContext("2d");
-const activateBtn = document.getElementById("activate-btn");
-const statusBox = document.getElementById("status-box");
-
-let handLandmarker;
-let lastVideoTime = -1;
-let lastSpokenGesture = null;
-let gestureHoldStart = 0;
-let cooldownUntil = 0;
-const HOLD_MS = 350;
-const COOLDOWN_MS = 500;
-
-const GESTURE_PHRASES = {
-  "open-palm": "Hello",
-  "fist": "Stop",
-  "thumbs-up": "Yes, that's good",
-  "peace": "Peace",
-  "pointing": "You",
-  "ok": "Okay",
-  "ily": "I love you"
-};
-
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1.05;
-  window.speechSynthesis.speak(utter);
-}
-
-async function bootstrapEngine() {
-  statusBox.innerText = "Downloading hand-tracking model...";
-  statusBox.style.borderLeftColor = "#ffcc00";
-  try {
-    const vision = await FilesetResolver.forVisionTasks(
-      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-    );
-    handLandmarker = await HandLandmarker.createFromOptions(vision, {
-      baseOptions: {
-        modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-        delegate: "GPU"
-      },
-      runningMode: "VIDEO",
-      numHands: 1
-    });
-    statusBox.innerText = "Model loaded. Accessing camera...";
-    startHardwareCamera();
-  } catch (err) {
-    statusBox.innerText = "Error loading tracking model. Check your connection.";
-    statusBox.style.borderLeftColor = "#ff3333";
-    console.error(err);
-  }
-}
-
-async function startHardwareCamera() {
-  const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } };
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject = stream;
-    video.addEventListener("loadeddata", () => {
-      statusBox.innerText = "Camera active - show a hand sign";
-      statusBox.style.borderLeftColor = "#00FFCC";
-      activateBtn.innerText = "Camera Running";
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      requestAnimationFrame(processVideoFrame);
-    });
-  } catch (cameraErr) {
-    statusBox.innerText = "Camera access blocked. Check browser permissions.";
-    statusBox.style.borderLeftColor = "#ff3333";
-    console.error(cameraErr);
-  }
-}
-
-function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
-
-function classifyGesture(lm) {
-  const extended = (tip, pip) => lm[tip].y < lm[pip].y - 0.02;
-  const indexExt = extended(8, 6);
-  const middleExt = extended(12, 10);
-  const ringExt = extended(16, 14);
-  const pinkyExt = extended(20, 18);
-  const thumbExt = dist(lm[4], lm[17]) > dist(lm[3], lm[17]) + 0.02;
-  const thumbIndexClose = dist(lm[4], lm[8]) < 0.05;
-
-  if (thumbIndexClose && middleExt && ringExt && pinkyExt) return "ok";
-  if (thumbExt && !indexExt && !middleExt && !ringExt && !pinkyExt) return "thumbs-up";
-  if (indexExt && middleExt && !ringExt && !pinkyExt && !thumbExt) return "peace";
-  if (indexExt && !middleExt && !ringExt && !pinkyExt) return "pointing";
-  if (thumbExt && indexExt && !middleExt && !ringExt && pinkyExt) return "ily";
-  if (thumbExt && indexExt && middleExt && ringExt && pinkyExt) return "open-palm";
-  if (!thumbExt && !indexExt && !middleExt && !ringExt && !pinkyExt) return "fist";
-  return null;
-}
-
-async function processVideoFrame() {
-  if (video.currentTime !== lastVideoTime) {
-    lastVideoTime = video.currentTime;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (handLandmarker) {
-      const results = handLandmarker.detectForVideo(video, performance.now());
-
-      if (results.landmarks && results.landmarks.length > 0) {
-        const lm = results.landmarks[0];
-        for (const point of lm) {
-          const x = point.x * canvas.width;
-          const y = point.y * canvas.height;
-          ctx.beginPath();
-          ctx.arc(x, y, 4, 0, 2 * Math.PI);
-          ctx.fillStyle = "#00FFCC";
-          ctx.fill();
-        }
-
-        const gesture = classifyGesture(lm);
-        const now = performance.now();
-
-        if (now < cooldownUntil) {
-          // just fired - brief pause before re-triggering
-        } else if (gesture && gesture === lastSpokenGesture) {
-          // still holding the same shape, don't re-speak until it changes
-        } else if (gesture) {
-          if (gestureHoldStart === 0) gestureHoldStart = now;
-          if (now - gestureHoldStart >= HOLD_MS) {
-            statusBox.innerText = `Recognized: ${GESTURE_PHRASES[gesture]}`;
-            speak(GESTURE_PHRASES[gesture]);
-            lastSpokenGesture = gesture;
-            gestureHoldStart = 0;
-            cooldownUntil = now + COOLDOWN_MS;
-          }
-        } else {
-          gestureHoldStart = 0;
-          lastSpokenGesture = null;
-          statusBox.innerText = "Hand detected - no matching sign yet";
-        }
-      } else {
-        gestureHoldStart = 0;
-        lastSpokenGesture = null;
-        statusBox.innerText = "Show your hand to the camera";
-      }
-    }
-  }
-  requestAnimationFrame(processVideoFrame);
-}
-
-activateBtn.addEventListener("click", () => {
-  activateBtn.disabled = true;
-  bootstrapEngine();
-});
-
-/* ================= SPEECH -> SIGN (live) ================= */
-const listenBtn = document.getElementById("listen-btn");
-const listenStatus = document.getElementById("listen-status");
-const liveCaption = document.getElementById("live-caption");
-const handEmoji = document.getElementById("hand-emoji");
-const captionWord = document.getElementById("caption-word");
-
-const KEYWORD_TO_SIGN = {
-  "hello": "👋 HELLO", "hi": "👋 HELLO", "hey": "👋 HELLO",
-  "yes": "👍 YES", "good": "👍 GOOD", "great": "👍 GREAT",
-  "no": "🤚 NO", "stop": "✊ STOP",
-  "peace": "✌️ PEACE", "you": "☝️ YOU", "me": "🫵 ME", "i": "🫵 I",
-  "okay": "👌 OKAY", "ok": "👌 OKAY", "fine": "👌 FINE",
-  "love": "🤟 LOVE", "thank": "🙏 THANK YOU", "thanks": "🙏 THANK YOU",
-  "please": "🙏 PLEASE", "sorry": "🥺 SORRY", "help": "🆘 HELP",
-  "done": "✅ DONE", "finished": "✅ FINISHED", "wait": "⏳ WAIT",
-  "eat": "🍽️ EAT", "drink": "🥤 DRINK", "water": "💧 WATER",
-  "home": "🏠 HOME", "work": "💼 WORK", "family": "👪 FAMILY",
-  "friend": "🤝 FRIEND", "happy": "😊 HAPPY", "sad": "😢 SAD",
-  "understand": "🧠 UNDERSTAND", "name": "📛 NAME", "time": "⏰ TIME",
-  "today": "📅 TODAY", "tomorrow": "🌅 TOMORROW", "want": "🙋 WANT",
-  "need": "🙋 NEED", "where": "❓ WHERE", "what": "❓ WHAT",
-  "why": "❓ WHY", "who": "❓ WHO", "more": "➕ MORE", "again": "🔁 AGAIN"
-};
-
-let recognition = null;
-let listening = false;
-let lastShownWord = "";
-
-function showSignForWord(word) {
-  const clean = word.toLowerCase().replace(/[^a-z]/g, "");
-  const match = KEYWORD_TO_SIGN[clean];
-  handEmoji.style.transform = "scale(0.75)";
-  setTimeout(() => { handEmoji.style.transform = "scale(1)"; }, 100);
-
-  if (match) {
-    const [emoji, ...wordParts] = match.split(" ");
-    handEmoji.innerText = emoji;
-    captionWord.innerText = wordParts.join(" ");
-  } else {
-    handEmoji.innerText = "🤔";
-    captionWord.innerText = word.toUpperCase();
-  }
-}
-
-function handleLiveText(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return;
-  const latest = words[words.length - 1];
-  if (latest !== lastShownWord) {
-    lastShownWord = latest;
-    showSignForWord(latest);
-  }
-}
-
-function startListening() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    listenStatus.innerText = "Speech recognition isn't supported in this browser. Try Chrome.";
-    listenStatus.style.borderLeftColor = "#ff3333";
-    return;
-  }
-  recognition = new SpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.lang = "en-US";
-
-  recognition.onresult = (event) => {
-    let interim = "";
-    let final = "";
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const t = event.results[i][0].transcript;
-      if (event.results[i].isFinal) final += t;
-      else interim += t;
-    }
-    const liveText = (final + " " + interim).trim();
-    liveCaption.innerText = liveText || "…";
-    handleLiveText(liveText);
-  };
-  recognition.onerror = (e) => {
-    listenStatus.innerText = "Recognition error: " + e.error;
-    listenStatus.style.borderLeftColor = "#ff3333";
-  };
-  recognition.onend = () => { if (listening) recognition.start(); };
-
-  recognition.start();
-  listening = true;
-  listenBtn.innerText = "Stop Microphone";
-  listenBtn.classList.add("on");
-  listenStatus.innerText = "Listening live...";
-  listenStatus.style.borderLeftColor = "#00FFCC";
-}
-
-function stopListening() {
-  listening = false;
-  if (recognition) recognition.stop();
-  listenBtn.innerText = "Start Microphone";
-  listenBtn.classList.remove("on");
-  listenStatus.innerText = "Microphone off";
-  listenStatus.style.borderLeftColor = "#333";
-}
-
-listenBtn.addEventListener("click", () => {
-  if (listening) stopListening();
-  else startListening();
-});
-</script>
+        <!-- Card 5 -->
+        <div class="card">
+            <h2>Prasnt Checklist</h2>
+            <div class="qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://udesign999-bot.github.io/-U-Design-Checklist-/" alt="QR Code">
+            </div>
+            <a href="https://udesign999-bot.github.io/-U-Design-Checklist-/" class="button" target="_blank">Open Website</a>
+            <div class="url-text">https://udesign999-bot.github.io/-U-Design-Checklist-/</div>
+        </div>
+    </div>
 </body>
 </html>
