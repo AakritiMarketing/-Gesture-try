@@ -1,186 +1,610 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creations | Link Hub</title>
-    <style>
-        :root {
-            --primary: #3b82f6;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-        }
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 3rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        h1 {
-            font-size: 3rem;
-            margin: 0 0 0.5rem 0;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin: 0;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-            width: 100%;
-            max-width: 1100px;
-        }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            border: 1px solid #334155;
-            position: relative;
-            overflow: hidden;
-        }
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            border-color: #475569;
-        }
-        .card:hover::before {
-            opacity: 1;
-        }
-        .card h2 {
-            margin: 0 0 1.5rem 0;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #e2e8f0;
-        }
-        .qr-wrapper {
-            background: #ffffff;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .qr-wrapper img {
-            display: block;
-            border-radius: 4px;
-        }
-        a.button {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
-            text-decoration: none;
-            padding: 0.85rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            width: 100%;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            margin-bottom: 1rem;
-        }
-        a.button:hover {
-            background-color: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-        }
-        .url-text {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            word-break: break-all;
-            line-height: 1.4;
-            padding: 0 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Inclusion Bridge - Live Two-Way</title>
+
+<style>
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  background: #0a0a0a;
+  color: #ffffff;
+  margin: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 12px; transition: transform 0.4s ease; }
+.app.flipped { transform: rotate(180deg); }
+.app[dir="rtl"] { text-align: right; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+h2 { margin: 0; font-weight: 600; font-size: 1.05rem; }
+.topbtns { display: flex; gap: 6px; }
+.icon-btn {
+  background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 8px;
+  padding: 8px 10px; font-size: 0.78rem; cursor: pointer; white-space: nowrap;
+}
+.icon-btn.active { background: #00FFCC; color: #000; border-color: #00FFCC; }
+
+.sign-panel {
+  background: #111; border: 2px solid #222; border-radius: 16px; padding: 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 250px; justify-content: center;
+}
+.sign-panel .label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+.hand-emoji { font-size: 6rem; line-height: 1; transition: transform 0.12s ease; }
+.word-primary { font-size: 1.75rem; font-weight: 800; color: #00FFCC; text-align: center; min-height: 2.1rem; }
+.word-secondary { font-size: 1.1rem; font-weight: 500; color: #7fd; opacity: 0.75; text-align: center; min-height: 1.5rem; }
+.live-caption { font-size: 0.92rem; color: #aaa; text-align: center; min-height: 1.3rem; padding: 0 6px; }
+
+.mic-row { display: flex; gap: 8px; }
+.mic-row .action-btn { flex: 1; }
+
+.cam-section { display: flex; flex-direction: column; gap: 10px; }
+.video-wrapper {
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  background: #111; border-radius: 14px; overflow: hidden; border: 2px solid #222;
+}
+video, canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+
+.action-btn {
+  background: #00FFCC; color: #000; border: none; padding: 13px;
+  border-radius: 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
+}
+.action-btn:disabled { background: #222; color: #555; }
+.action-btn.on { background: #ff5566; color: #fff; }
+
+.status-box {
+  background: #141414; padding: 10px; border-radius: 10px; font-size: 0.82rem;
+  border-left: 4px solid #333; text-align: center;
+}
+.status-box .secondary { color: #888; font-size: 0.78rem; margin-top: 2px; }
+.app[dir="rtl"] .status-box { border-left: none; border-right: 4px solid #333; }
+
+.log-panel {
+  display: none; background: #0f0f0f; border: 2px solid #222; border-radius: 14px;
+  padding: 10px; flex-direction: column; gap: 8px;
+}
+.log-panel.open { display: flex; }
+.log-scroll { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 4px; }
+.bubble {
+  max-width: 82%; padding: 8px 12px; border-radius: 14px; font-size: 0.85rem; line-height: 1.35;
+  position: relative;
+}
+.bubble.you { align-self: flex-end; background: #005c4b; color: #e9fff9; border-bottom-right-radius: 4px; }
+.bubble.him { align-self: flex-start; background: #262626; color: #fff; border-bottom-left-radius: 4px; }
+.app[dir="rtl"] .bubble.you { align-self: flex-start; border-bottom-left-radius: 4px; border-bottom-right-radius: 14px; }
+.app[dir="rtl"] .bubble.him { align-self: flex-end; border-bottom-right-radius: 4px; border-bottom-left-radius: 14px; }
+.bubble .who { font-size: 0.66rem; opacity: 0.7; margin-bottom: 2px; font-weight: 600; }
+.bubble .secondary-line { opacity: 0.7; font-size: 0.8rem; margin-top: 2px; }
+.bubble .time { font-size: 0.6rem; opacity: 0.55; margin-top: 3px; text-align: right; }
+.log-actions { display: flex; gap: 6px; }
+.log-actions button {
+  flex: 1; background: #1a1a1a; border: 1px solid #333; color: #ccc; border-radius: 8px;
+  padding: 8px; font-size: 0.75rem; cursor: pointer;
+}
+
+.note {
+  background: #141414; padding: 12px 14px; border-radius: 10px; font-size: 0.75rem;
+  color: #999; line-height: 1.4;
+}
+.note b { color: #ccc; }
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>Creations</h1>
-        <p class="subtitle">Your Centralized Hub & QR Code Dashboard</p>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <h2 id="title-text">Inclusion Bridge — Live</h2>
+    <div class="topbtns">
+      <button id="lang-btn" class="icon-btn">EN / عربي</button>
+      <button id="log-toggle-btn" class="icon-btn">Log</button>
+      <button id="flip-btn" class="icon-btn">Flip ↕</button>
     </div>
-    
-    <div class="grid">
-        <!-- Card 1 -->
-        <div class="card">
-            <h2>Prasnt Studio</h2>
-            <div class="qr-wrapper">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/" alt="QR Code">
-            </div>
-            <a href="https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/" class="button" target="_blank">Open Website</a>
-            <div class="url-text">https://tzprasantofficial-ai.github.io/-PRASNTSTUDIO-/</div>
-        </div>
+  </div>
 
-        <!-- Card 2 -->
-        <div class="card">
-            <h2>U-Design</h2>
-            <div class="qr-wrapper">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://udesign999-bot.github.io/" alt="QR Code">
-            </div>
-            <a href="https://udesign999-bot.github.io/" class="button" target="_blank">Open Website</a>
-            <div class="url-text">https://udesign999-bot.github.io/</div>
-        </div>
+  <div class="sign-panel">
+    <div class="label" id="sign-label">What's being said, shown as sign</div>
+    <div class="hand-emoji" id="hand-emoji">🖐️</div>
+    <div class="word-primary" id="word-primary">Ready</div>
+    <div class="word-secondary" id="word-secondary"></div>
+    <div class="live-caption" id="live-caption">Turn on the mic to start</div>
+  </div>
+  <div class="mic-row">
+    <button id="listen-btn" class="action-btn">Start Microphone</button>
+  </div>
+  <div id="listen-status" class="status-box">Microphone off</div>
 
-        <!-- Card 3 -->
-        <div class="card">
-            <h2>Prasnt Web Bio</h2>
-            <div class="qr-wrapper">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://tzprasantofficial-ai.github.io/-Prasant-/" alt="QR Code">
-            </div>
-            <a href="https://tzprasantofficial-ai.github.io/-Prasant-/" class="button" target="_blank">Open Website</a>
-            <div class="url-text">https://tzprasantofficial-ai.github.io/-Prasant-/</div>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="card">
-            <h2>Prasnt Website</h2>
-            <div class="qr-wrapper">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://prasant-studio.ai.studio/" alt="QR Code">
-            </div>
-            <a href="https://prasant-studio.ai.studio/" class="button" target="_blank">Open Website</a>
-            <div class="url-text">https://prasant-studio.ai.studio/</div>
-        </div>
-
-        <!-- Card 5 -->
-        <div class="card">
-            <h2>Prasnt Checklist</h2>
-            <div class="qr-wrapper">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://udesign999-bot.github.io/-U-Design-Checklist-/" alt="QR Code">
-            </div>
-            <a href="https://udesign999-bot.github.io/-U-Design-Checklist-/" class="button" target="_blank">Open Website</a>
-            <div class="url-text">https://udesign999-bot.github.io/-U-Design-Checklist-/</div>
-        </div>
+  <div class="cam-section">
+    <div class="video-wrapper">
+      <video id="webcam" autoplay playsinline muted></video>
+      <canvas id="output_canvas"></canvas>
     </div>
+    <button id="activate-btn" class="action-btn">Start Camera Tracking</button>
+    <div id="status-box" class="status-box">Camera off</div>
+  </div>
+
+  <div class="log-panel" id="log-panel">
+    <div class="log-scroll" id="log-scroll"></div>
+    <div class="log-actions">
+      <button id="download-log-btn">⬇ Download Transcript</button>
+      <button id="clear-log-btn">🗑 Clear Log</button>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>What's running now:</b> hand-sign recognition uses Google's trained Gesture
+    Recognizer model (7 signs). Speech works in English and Arabic (UAE). Every dictionary match
+    now shows <b>both languages at once</b> so either person can confirm the meaning, no matter
+    which one they read. Words outside the ~40-word dictionary get a best-effort on-device
+    translation attempt (Chrome only, experimental, needs a one-time language pack download) -
+    if that's unavailable, only the original text is shown, marked clearly. The conversation log
+    saves on this device and can be downloaded as a CSV for research.
+  </div>
+</div>
+
+<script type="module">
+import { GestureRecognizer, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+
+/* ================= UI strings / language ================= */
+const UI = {
+  en: {
+    title: "Inclusion Bridge — Live", flip: "Flip ↕", lang: "EN / عربي",
+    signLabel: "What's being said, shown as sign", ready: "Ready",
+    micOff: "Microphone off", micOn: "Listening live...",
+    startMic: "Start Microphone", stopMic: "Stop Microphone",
+    camOff: "Camera off", startCam: "Start Camera Tracking", camRunning: "Camera Running",
+    waitingMic: "Turn on the mic to start", showLog: "Log", hideLog: "Hide Log",
+    download: "⬇ Download Transcript", clearLog: "🗑 Clear Log", noTranslation: "(translation unavailable)"
+  },
+  ar: {
+    title: "جسر الشمول — مباشر", flip: "قلب ↕", lang: "EN / عربي",
+    signLabel: "ما يُقال، معروضاً كإشارة", ready: "جاهز",
+    micOff: "الميكروفون متوقف", micOn: "الاستماع مباشرة...",
+    startMic: "تشغيل الميكروفون", stopMic: "إيقاف الميكروفون",
+    camOff: "الكاميرا متوقفة", startCam: "بدء تتبع الكاميرا", camRunning: "الكاميرا تعمل",
+    waitingMic: "شغّل الميكروفون للبدء", showLog: "السجل", hideLog: "إخفاء السجل",
+    download: "⬇ تنزيل النص", clearLog: "🗑 مسح السجل", noTranslation: "(الترجمة غير متوفرة)"
+  }
+};
+let currentLang = "en";
+function otherLang() { return currentLang === "en" ? "ar" : "en"; }
+
+const appEl = document.getElementById("app");
+const titleText = document.getElementById("title-text");
+const signLabel = document.getElementById("sign-label");
+const listenStatus = document.getElementById("listen-status");
+const activateBtn = document.getElementById("activate-btn");
+const statusBox = document.getElementById("status-box");
+const liveCaption = document.getElementById("live-caption");
+const wordPrimary = document.getElementById("word-primary");
+const wordSecondary = document.getElementById("word-secondary");
+const logToggleBtn = document.getElementById("log-toggle-btn");
+const downloadBtn = document.getElementById("download-log-btn");
+const clearLogBtn = document.getElementById("clear-log-btn");
+const listenBtnEl = document.getElementById("listen-btn");
+
+function applyLanguageUI() {
+  const t = UI[currentLang];
+  titleText.innerText = t.title;
+  document.getElementById("flip-btn").innerText = t.flip;
+  document.getElementById("lang-btn").innerText = t.lang;
+  signLabel.innerText = t.signLabel;
+  if (!listening) listenStatus.innerText = t.micOff;
+  if (!listenBtnEl.classList.contains("on")) listenBtnEl.innerText = t.startMic;
+  if (!camRunning) statusBox.innerText = t.camOff;
+  if (!camRunning) activateBtn.innerText = t.startCam;
+  if (!listening) liveCaption.innerText = t.waitingMic;
+  logToggleBtn.innerText = logOpen ? t.hideLog : t.showLog;
+  downloadBtn.innerText = t.download;
+  clearLogBtn.innerText = t.clearLog;
+  appEl.setAttribute("dir", currentLang === "ar" ? "rtl" : "ltr");
+}
+
+document.getElementById("lang-btn").addEventListener("click", () => {
+  currentLang = currentLang === "en" ? "ar" : "en";
+  const wasListening = listening;
+  if (wasListening) stopListening();
+  applyLanguageUI();
+  if (wasListening) startListening();
+});
+
+document.getElementById("flip-btn").addEventListener("click", () => {
+  appEl.classList.toggle("flipped");
+});
+
+/* ================= Experimental on-device translation (Chrome only) ================= */
+const translatorCache = {};
+async function tryTranslate(text, fromLang) {
+  if (!text || !("Translator" in self)) return null;
+  const to = fromLang === "ar" ? "en" : "ar";
+  const key = fromLang + "-" + to;
+  try {
+    if (!translatorCache[key]) {
+      const avail = await Translator.availability({ sourceLanguage: fromLang, targetLanguage: to });
+      if (avail === "unavailable") return null;
+      translatorCache[key] = await Translator.create({ sourceLanguage: fromLang, targetLanguage: to });
+    }
+    const result = await translatorCache[key].translate(text);
+    return result || null;
+  } catch (e) {
+    console.warn("Translation unavailable:", e);
+    return null;
+  }
+}
+
+/* ================= Conversation log (WhatsApp-style, saved, bilingual) ================= */
+const logPanel = document.getElementById("log-panel");
+const logScroll = document.getElementById("log-scroll");
+let logOpen = false;
+let conversation = [];
+
+function loadLog() {
+  try {
+    const saved = localStorage.getItem("inclusion_bridge_log");
+    conversation = saved ? JSON.parse(saved) : [];
+  } catch (e) { conversation = []; }
+  renderLog();
+}
+function saveLog() {
+  try { localStorage.setItem("inclusion_bridge_log", JSON.stringify(conversation)); } catch (e) {}
+}
+function renderLog() {
+  logScroll.innerHTML = "";
+  for (const entry of conversation) {
+    const div = document.createElement("div");
+    div.className = "bubble " + (entry.speaker === "you" ? "you" : "him");
+    const who = entry.speaker === "you" ? "You (spoken)" : "Him (signed)";
+    let html = '<div class="who">' + who + '</div><div>' + escapeHtml(entry.text) + '</div>';
+    if (entry.secondary) html += '<div class="secondary-line">' + escapeHtml(entry.secondary) + '</div>';
+    html += '<div class="time">' + entry.time + '</div>';
+    div.innerHTML = html;
+    logScroll.appendChild(div);
+  }
+  logScroll.scrollTop = logScroll.scrollHeight;
+}
+function escapeHtml(s) { return s.replace(/</g, "&lt;"); }
+
+function addLogEntry(speaker, text, secondary) {
+  if (!text || !text.trim()) return;
+  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const entry = { speaker, text: text.trim(), secondary: secondary || "", time };
+  conversation.push(entry);
+  saveLog();
+  renderLog();
+  return entry;
+}
+function updateLastEntrySecondary(entryRef, secondaryText) {
+  entryRef.secondary = secondaryText;
+  saveLog();
+  renderLog();
+}
+
+logToggleBtn.addEventListener("click", () => {
+  logOpen = !logOpen;
+  logPanel.classList.toggle("open", logOpen);
+  logToggleBtn.innerText = logOpen ? UI[currentLang].hideLog : UI[currentLang].showLog;
+});
+downloadBtn.addEventListener("click", () => {
+  let csv = "time,speaker,message,secondary\n";
+  for (const e of conversation) {
+    csv += '"' + e.time + '","' + e.speaker + '","' + e.text.replace(/"/g, '""') + '","' + (e.secondary || "").replace(/"/g, '""') + '"\n';
+  }
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inclusion-bridge-transcript-" + Date.now() + ".csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+clearLogBtn.addEventListener("click", () => { conversation = []; saveLog(); renderLog(); });
+
+loadLog();
+
+/* ================= SIGN -> SPEECH (real trained Gesture Recognizer, bilingual) ================= */
+const video = document.getElementById("webcam");
+const canvas = document.getElementById("output_canvas");
+const canvasCtx = canvas.getContext("2d");
+
+let gestureRecognizer;
+let lastVideoTime = -1;
+let lastSpokenGesture = null;
+let gestureHoldStart = 0;
+let cooldownUntil = 0;
+let camRunning = false;
+const HOLD_MS = 250;
+const COOLDOWN_MS = 500;
+const MIN_SCORE = 0.6;
+
+const GESTURE_PHRASES = {
+  "Open_Palm": { en: "Hello", ar: "مرحباً" },
+  "Closed_Fist": { en: "Stop", ar: "قف" },
+  "Thumb_Up": { en: "Yes, that's good", ar: "نعم، جيد" },
+  "Thumb_Down": { en: "No", ar: "لا" },
+  "Victory": { en: "Peace", ar: "سلام" },
+  "Pointing_Up": { en: "You", ar: "أنت" },
+  "ILoveYou": { en: "I love you", ar: "أحبك" }
+};
+
+function speak(text, lang) {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang === "ar" ? "ar-SA" : "en-US";
+  utter.rate = lang === "ar" ? 0.95 : 1.05;
+  window.speechSynthesis.speak(utter);
+}
+
+async function bootstrapEngine() {
+  statusBox.innerText = "Downloading gesture model...";
+  statusBox.style.borderLeftColor = "#ffcc00";
+  try {
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+      baseOptions: {
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+        delegate: "GPU"
+      },
+      runningMode: "VIDEO",
+      numHands: 1
+    });
+    statusBox.innerText = "Model loaded. Accessing camera...";
+    startHardwareCamera();
+  } catch (err) {
+    statusBox.innerText = "Error loading model. Check your connection.";
+    statusBox.style.borderLeftColor = "#ff3333";
+    console.error(err);
+  }
+}
+
+async function startHardwareCamera() {
+  const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } } };
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject = stream;
+    video.addEventListener("loadeddata", () => {
+      camRunning = true;
+      statusBox.innerText = "Camera active - show a hand sign";
+      statusBox.style.borderLeftColor = "#00FFCC";
+      activateBtn.innerText = UI[currentLang].camRunning;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      requestAnimationFrame(processVideoFrame);
+    });
+  } catch (cameraErr) {
+    statusBox.innerText = "Camera access blocked. Check browser permissions.";
+    statusBox.style.borderLeftColor = "#ff3333";
+    console.error(cameraErr);
+  }
+}
+
+function setStatusBilingual(primary, secondary) {
+  statusBox.innerHTML = escapeHtml(primary) + (secondary ? '<div class="secondary">' + escapeHtml(secondary) + '</div>' : "");
+}
+
+async function processVideoFrame() {
+  if (video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (gestureRecognizer) {
+      const results = gestureRecognizer.recognizeForVideo(video, performance.now());
+
+      if (results.landmarks && results.landmarks.length > 0) {
+        for (const point of results.landmarks[0]) {
+          const x = point.x * canvas.width;
+          const y = point.y * canvas.height;
+          canvasCtx.beginPath();
+          canvasCtx.arc(x, y, 4, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = "#00FFCC";
+          canvasCtx.fill();
+        }
+      }
+
+      let gesture = null;
+      if (results.gestures && results.gestures.length > 0 && results.gestures[0].length > 0) {
+        const top = results.gestures[0][0];
+        if (top.categoryName !== "None" && top.score >= MIN_SCORE) gesture = top.categoryName;
+      }
+
+      const now = performance.now();
+      if (now < cooldownUntil) {
+        // brief pause after last trigger
+      } else if (gesture && gesture === lastSpokenGesture) {
+        // still holding same shape
+      } else if (gesture && GESTURE_PHRASES[gesture]) {
+        if (gestureHoldStart === 0) gestureHoldStart = now;
+        if (now - gestureHoldStart >= HOLD_MS) {
+          const primaryPhrase = GESTURE_PHRASES[gesture][currentLang];
+          const secondaryPhrase = GESTURE_PHRASES[gesture][otherLang()];
+          setStatusBilingual(primaryPhrase, secondaryPhrase);
+          speak(primaryPhrase, currentLang);
+          addLogEntry("him", primaryPhrase, secondaryPhrase);
+          lastSpokenGesture = gesture;
+          gestureHoldStart = 0;
+          cooldownUntil = now + COOLDOWN_MS;
+        }
+      } else if (results.landmarks && results.landmarks.length > 0) {
+        gestureHoldStart = 0;
+        lastSpokenGesture = null;
+        statusBox.innerText = "Hand detected - no matching sign yet";
+      } else {
+        gestureHoldStart = 0;
+        lastSpokenGesture = null;
+        statusBox.innerText = "Show your hand to the camera";
+      }
+    }
+  }
+  requestAnimationFrame(processVideoFrame);
+}
+
+activateBtn.addEventListener("click", () => {
+  activateBtn.disabled = true;
+  bootstrapEngine();
+});
+
+/* ================= SPEECH -> SIGN (live, bilingual dictionary, translation fallback) ================= */
+const handEmoji = document.getElementById("hand-emoji");
+
+// Each concept carries both languages together, so a match always shows both.
+const CONCEPTS = [
+  { emoji: "👋", en: "HELLO", ar: "مرحباً", enT: ["hello", "hi", "hey"], arT: ["مرحبا", "مرحباً", "اهلا", "أهلاً"] },
+  { emoji: "👍", en: "YES", ar: "نعم", enT: ["yes"], arT: ["نعم"] },
+  { emoji: "👍", en: "GOOD", ar: "تمام", enT: ["good", "great", "fine"], arT: ["تمام", "زين"] },
+  { emoji: "🤚", en: "NO", ar: "لا", enT: ["no"], arT: ["لا"] },
+  { emoji: "✊", en: "STOP", ar: "قف", enT: ["stop"], arT: ["قف"] },
+  { emoji: "⏳", en: "WAIT", ar: "انتظر", enT: ["wait"], arT: ["انتظر"] },
+  { emoji: "✌️", en: "PEACE", ar: "سلام", enT: ["peace"], arT: ["سلام"] },
+  { emoji: "☝️", en: "YOU", ar: "أنت", enT: ["you"], arT: ["انت", "أنت"] },
+  { emoji: "🫵", en: "ME", ar: "أنا", enT: ["me", "i"], arT: ["انا", "أنا"] },
+  { emoji: "👌", en: "OKAY", ar: "أوكي", enT: ["okay", "ok"], arT: ["اوكي", "أوكي"] },
+  { emoji: "🤟", en: "LOVE", ar: "أحبك", enT: ["love"], arT: ["احبك", "أحبك"] },
+  { emoji: "🙏", en: "THANK YOU", ar: "شكراً", enT: ["thank", "thanks"], arT: ["شكرا", "شكراً"] },
+  { emoji: "🙏", en: "PLEASE", ar: "فضلك", enT: ["please"], arT: ["فضلك"] },
+  { emoji: "🥺", en: "SORRY", ar: "آسف", enT: ["sorry"], arT: ["اسف", "آسف"] },
+  { emoji: "🆘", en: "HELP", ar: "مساعدة", enT: ["help"], arT: ["مساعدة"] },
+  { emoji: "✅", en: "DONE", ar: "خلاص", enT: ["done"], arT: ["خلاص"] },
+  { emoji: "✅", en: "FINISHED", ar: "انتهيت", enT: ["finished"], arT: ["انتهيت"] },
+  { emoji: "🍽️", en: "EAT", ar: "أكل", enT: ["eat"], arT: ["اكل", "أكل"] },
+  { emoji: "🥤", en: "DRINK", ar: "شرب", enT: ["drink"], arT: ["شرب"] },
+  { emoji: "💧", en: "WATER", ar: "ماء", enT: ["water"], arT: ["ماء"] },
+  { emoji: "🏠", en: "HOME", ar: "بيت", enT: ["home"], arT: ["بيت"] },
+  { emoji: "💼", en: "WORK", ar: "عمل", enT: ["work"], arT: ["عمل"] },
+  { emoji: "👪", en: "FAMILY", ar: "عائلة", enT: ["family"], arT: ["عائلة"] },
+  { emoji: "🤝", en: "FRIEND", ar: "صديق", enT: ["friend"], arT: ["صديق"] },
+  { emoji: "😊", en: "HAPPY", ar: "سعيد", enT: ["happy"], arT: ["سعيد"] },
+  { emoji: "😢", en: "SAD", ar: "حزين", enT: ["sad"], arT: ["حزين"] },
+  { emoji: "🧠", en: "UNDERSTAND", ar: "أفهم", enT: ["understand"], arT: ["افهم", "أفهم"] },
+  { emoji: "📛", en: "NAME", ar: "اسم", enT: ["name"], arT: ["اسم"] },
+  { emoji: "⏰", en: "TIME", ar: "وقت", enT: ["time"], arT: ["وقت"] },
+  { emoji: "📅", en: "TODAY", ar: "اليوم", enT: ["today"], arT: ["اليوم"] },
+  { emoji: "🌅", en: "TOMORROW", ar: "غداً", enT: ["tomorrow"], arT: ["غدا", "غداً"] },
+  { emoji: "🙋", en: "WANT", ar: "أريد", enT: ["want"], arT: ["اريد", "أريد"] },
+  { emoji: "🙋", en: "NEED", ar: "أحتاج", enT: ["need"], arT: ["احتاج", "أحتاج"] },
+  { emoji: "❓", en: "WHERE", ar: "أين", enT: ["where"], arT: ["اين", "أين"] },
+  { emoji: "❓", en: "WHAT", ar: "ماذا", enT: ["what"], arT: ["ماذا"] },
+  { emoji: "❓", en: "WHY", ar: "لماذا", enT: ["why"], arT: ["لماذا"] },
+  { emoji: "❓", en: "WHO", ar: "من", enT: ["who"], arT: ["من"] },
+  { emoji: "➕", en: "MORE", ar: "أكثر", enT: ["more"], arT: ["اكثر", "أكثر"] },
+  { emoji: "🔁", en: "AGAIN", ar: "مجدداً", enT: ["again"], arT: ["مجددا", "مجدداً"] }
+];
+
+const TRIGGER_MAP = {};
+for (const c of CONCEPTS) {
+  for (const w of c.enT) TRIGGER_MAP[w] = c;
+  for (const w of c.arT) TRIGGER_MAP[w] = c;
+}
+
+let recognition = null;
+let listening = false;
+let lastShownWord = "";
+
+function cleanWord(word) {
+  return word.toLowerCase().replace(/[^\u0600-\u06FFa-z]/g, "");
+}
+
+function showSignForWord(word) {
+  const clean = cleanWord(word);
+  const concept = TRIGGER_MAP[clean];
+  handEmoji.style.transform = "scale(0.75)";
+  setTimeout(() => { handEmoji.style.transform = "scale(1)"; }, 100);
+
+  if (concept) {
+    handEmoji.innerText = concept.emoji;
+    wordPrimary.innerText = concept[currentLang];
+    wordSecondary.innerText = concept[otherLang()];
+  } else {
+    // No dictionary match - show raw word, try a best-effort translation for confirmation.
+    handEmoji.innerText = "🤔";
+    wordPrimary.innerText = word;
+    wordSecondary.innerText = "…";
+    tryTranslate(word, currentLang).then((translated) => {
+      wordSecondary.innerText = translated || UI[currentLang].noTranslation;
+    });
+  }
+}
+
+function handleLiveText(text) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return;
+  const latest = words[words.length - 1];
+  if (latest !== lastShownWord) {
+    lastShownWord = latest;
+    showSignForWord(latest);
+  }
+}
+
+function startListening() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    listenStatus.innerText = "Speech recognition isn't supported in this browser. Try Chrome.";
+    listenStatus.style.borderLeftColor = "#ff3333";
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = currentLang === "ar" ? "ar-AE" : "en-US";
+
+  recognition.onresult = (event) => {
+    let interim = "";
+    let final = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += t;
+      else interim += t;
+    }
+    const liveText = (final + " " + interim).trim();
+    liveCaption.innerText = liveText || "…";
+    handleLiveText(liveText);
+
+    if (final.trim()) {
+      const finalText = final.trim();
+      const entry = addLogEntry("you", finalText, "…");
+      tryTranslate(finalText, currentLang).then((translated) => {
+        updateLastEntrySecondary(entry, translated || UI[currentLang].noTranslation);
+      });
+    }
+  };
+  recognition.onerror = (e) => {
+    listenStatus.innerText = "Recognition error: " + e.error;
+    listenStatus.style.borderLeftColor = "#ff3333";
+  };
+  recognition.onend = () => { if (listening) recognition.start(); };
+
+  recognition.start();
+  listening = true;
+  listenBtnEl.innerText = UI[currentLang].stopMic;
+  listenBtnEl.classList.add("on");
+  listenStatus.innerText = UI[currentLang].micOn;
+  listenStatus.style.borderLeftColor = "#00FFCC";
+}
+
+function stopListening() {
+  listening = false;
+  if (recognition) recognition.stop();
+  listenBtnEl.innerText = UI[currentLang].startMic;
+  listenBtnEl.classList.remove("on");
+  listenStatus.innerText = UI[currentLang].micOff;
+  listenStatus.style.borderLeftColor = "#333";
+}
+
+listenBtnEl.addEventListener("click", () => {
+  if (listening) stopListening();
+  else startListening();
+});
+
+applyLanguageUI();
+</script>
 </body>
 </html>
